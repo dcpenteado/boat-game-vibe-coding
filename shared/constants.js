@@ -11,7 +11,7 @@ export const BOAT_MAX_SPEED = 120;
 export const BOAT_ACCELERATION = 60;
 export const BOAT_REVERSE_ACCEL = 30;
 export const BOAT_DRAG = 0.98;
-export const BOAT_ANGULAR_SPEED = 2.0;
+export const BOAT_ANGULAR_SPEED = 1.0;
 export const BOAT_MIN_TURN_FRAC = 0.3;
 export const BOAT_LENGTH = 12;
 export const BOAT_WIDTH = 5;
@@ -22,8 +22,8 @@ export const DASH_DURATION = 0.4;
 export const DASH_COOLDOWN = 5.0;
 
 // ====== COMBAT ======
-export const FIRE_MIN_SPEED = 75;
-export const FIRE_MAX_SPEED = 250;
+export const FIRE_MIN_SPEED = 100;
+export const FIRE_MAX_SPEED = 350;
 export const FIRE_CHARGE_TIME = 2.0;
 export const PROJECTILE_GRAVITY = 100;
 export const PROJECTILE_LAUNCH_ANGLE = Math.PI / 6;

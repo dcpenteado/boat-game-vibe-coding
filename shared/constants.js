@@ -22,13 +22,13 @@ export const DASH_DURATION = 0.4;
 export const DASH_COOLDOWN = 5.0;
 
 // ====== COMBAT ======
-export const FIRE_MIN_SPEED = 100;
-export const FIRE_MAX_SPEED = 350;
+export const FIRE_MIN_SPEED = 200;
+export const FIRE_MAX_SPEED = 600;
 export const FIRE_CHARGE_TIME = 2.0;
 export const PROJECTILE_GRAVITY = 100;
-export const PROJECTILE_LAUNCH_ANGLE = Math.PI / 6;
+export const PROJECTILE_LAUNCH_ANGLE = Math.PI / 10;
 export const CANNONBALL_DAMAGE = 100;
-export const CANNONBALL_RADIUS = 10.0;
+export const CANNONBALL_RADIUS = 20.0;
 export const FIRE_COOLDOWN = 1.0;
 export const MAX_HP = 100;
 export const RESPAWN_TIME = 9.0;

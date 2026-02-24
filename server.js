@@ -342,13 +342,19 @@ function serverTick(room) {
         if (pid === proj.ownerId || !p.alive) continue;
         const dx = proj.x - p.x, dz = proj.z - p.z;
         const dist = Math.sqrt(dx * dx + dz * dz);
-        if (dist < C.CANNONBALL_RADIUS + C.BOAT_WIDTH) {
+        let damage = 0;
+        if (dist <= C.CANNONBALL_DIRECT_RADIUS) {
+          damage = C.CANNONBALL_DIRECT_DAMAGE;
+        } else if (dist <= C.CANNONBALL_SPLASH_RADIUS) {
+          damage = C.CANNONBALL_SPLASH_DAMAGE;
+        }
+        if (damage > 0) {
           if (p.buffs.shield > 0) {
             p.buffs.shield = 0;
             io.to(room.name).emit('shieldBreak', { playerId: pid, x: proj.x, z: proj.z });
           } else {
-            p.hp -= C.CANNONBALL_DAMAGE;
-            io.to(room.name).emit('hit', { x: proj.x, z: proj.z, targetId: pid, shooterId: proj.ownerId, damage: C.CANNONBALL_DAMAGE });
+            p.hp -= damage;
+            io.to(room.name).emit('hit', { x: proj.x, z: proj.z, targetId: pid, shooterId: proj.ownerId, damage });
             if (p.hp <= 0) killPlayer(p, proj.ownerId, room);
           }
           room.projectiles.splice(i, 1);
@@ -370,7 +376,7 @@ function serverTick(room) {
     if (proj.y < 12) {
       for (const isl of room.islands) {
         const dx = proj.x - isl.x, dz = proj.z - isl.z;
-        if (dx * dx + dz * dz < (isl.radius + C.CANNONBALL_RADIUS) ** 2) {
+        if (dx * dx + dz * dz < (isl.radius + C.CANNONBALL_DIRECT_RADIUS) ** 2) {
           io.to(room.name).emit('hit', { x: proj.x, z: proj.z, targetId: null, shooterId: proj.ownerId, damage: 0 });
           room.projectiles.splice(i, 1);
           break;

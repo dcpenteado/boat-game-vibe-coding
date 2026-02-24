@@ -31,7 +31,7 @@ export const CANNONBALL_DAMAGE = 100;
 export const CANNONBALL_RADIUS = 10.0;
 export const FIRE_COOLDOWN = 1.0;
 export const MAX_HP = 100;
-export const RESPAWN_TIME = 3.0;
+export const RESPAWN_TIME = 9.0;
 
 // ====== POWER-UPS ======
 export const POWERUP_SPAWN_INTERVAL = 8.0;

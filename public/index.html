@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barquinho - Naval Combat</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Lobby Screen (rooms) — shown first -->
+  <div id="lobbyScreen">
+    <div class="lobby-box">
+      <h1>BARQUINHO</h1>
+      <p class="subtitle">Multiplayer Naval Combat</p>
+
+      <div class="lobby-section">
+        <h2>CREATE ROOM</h2>
+        <div class="lobby-create">
+          <input type="text" id="roomNameInput" placeholder="Room name" maxlength="24" autocomplete="off" spellcheck="false">
+          <button id="btnCreateRoom">CREATE</button>
+        </div>
+        <div id="createRoomError" class="lobby-error"></div>
+      </div>
+
+      <div class="lobby-section">
+        <h2>AVAILABLE ROOMS</h2>
+        <div id="roomList" class="room-list">
+          <div class="room-empty">No rooms available. Create one!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Join Screen (name input) — shown after room selection -->
+  <div id="joinScreen" style="display:none">
+    <div class="join-box">
+      <h1>BARQUINHO</h1>
+      <p class="subtitle" id="selectedRoomLabel"></p>
+      <input type="text" id="nameInput" placeholder="Your name" maxlength="16" autocomplete="off" spellcheck="false">
+      <button id="btnJoin">PLAY</button>
+      <div class="controls-hint">
+        <span>WASD</span> move &nbsp;|&nbsp; <span>SPACE</span> / <span>CLICK</span> hold & release to fire &nbsp;|&nbsp; <span>SHIFT</span> dash
+      </div>
+      <button id="btnBackToLobby" class="lobby-back">&larr; BACK</button>
+    </div>
+  </div>
+
+  <!-- Game HUD -->
+  <div id="hud" style="display:none">
+    <div id="healthBar">
+      <div id="healthFill"></div>
+      <span id="healthText">100</span>
+    </div>
+    <div id="chargeBar" style="display:none"><div id="chargeFill"></div><span id="chargeLabel">CHARGE</span></div>
+    <div id="dashBar"><div id="dashFill"></div><span id="dashLabel">DASH</span></div>
+    <div id="buffsContainer"></div>
+    <div id="minimap"><canvas id="minimapCanvas" width="160" height="160"></canvas></div>
+    <div id="killFeed"></div>
+    <div id="scoreboard"></div>
+    <div id="playerCount"></div>
+    <div id="hitIndicators"></div>
+    <div id="powerupNotification" style="display:none"></div>
+    <div id="fpsCounter">0 FPS</div>
+    <button id="musicToggle" title="Toggle Music">&#9835;</button>
+    <button id="btnLeaveRoom" title="Leave room">LEAVE</button>
+    <div id="respawnOverlay" style="display:none">
+      <div class="respawn-content">
+        <span class="respawn-text">SUNK!</span>
+        <span class="respawn-sub">Respawning...</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>

@@ -27,6 +27,10 @@ export class EffectsManager {
       blending: THREE.AdditiveBlending
     });
 
+    // Trajectory trails
+    this.trajectoryTrails = new Map(); // projectile id -> { line, pointCount, maxPoints }
+    this.fadingTrails = [];            // trails fading out after projectile disappears
+
     // Sprite pool
     this._pool = [];
     const POOL_SIZE = 120;
@@ -226,6 +230,19 @@ export class EffectsManager {
       }
     }
 
+    // Move trails of removed projectiles to fading list
+    for (const [id, trail] of this.trajectoryTrails) {
+      if (!activeIds.has(id)) {
+        this.fadingTrails.push({
+          line: trail.line,
+          fadeTime: 0,
+          maxFadeTime: 2.0,
+          startOpacity: trail.line.material.opacity
+        });
+        this.trajectoryTrails.delete(id);
+      }
+    }
+
     // Update/add
     for (const p of projList) {
       let group = this.projectileMeshes.get(p.id);
@@ -263,7 +280,62 @@ export class EffectsManager {
         group._shadow.scale.set(shadowScale, shadowScale, 1);
         group._shadow.material.opacity = Math.max(0.05, 0.3 - y * 0.003);
       }
+
+      // Update trajectory trail
+      this._updateTrail(p.id, p.x, y, p.z);
     }
+  }
+
+  // ---------- Trajectory trail ----------
+  _updateTrail(id, x, y, z) {
+    const MAX_POINTS = 300;
+    let trail = this.trajectoryTrails.get(id);
+
+    if (!trail) {
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(MAX_POINTS * 3);
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setDrawRange(0, 0);
+
+      const material = new THREE.LineBasicMaterial({
+        color: 0xff6633,
+        transparent: true,
+        opacity: 0.5,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      const line = new THREE.Line(geometry, material);
+      this.scene.add(line);
+      trail = { line, pointCount: 0, maxPoints: MAX_POINTS };
+      this.trajectoryTrails.set(id, trail);
+    }
+
+    if (trail.pointCount < trail.maxPoints) {
+      const positions = trail.line.geometry.attributes.position.array;
+      const idx = trail.pointCount * 3;
+      positions[idx] = x;
+      positions[idx + 1] = y;
+      positions[idx + 2] = z;
+      trail.pointCount++;
+      trail.line.geometry.setDrawRange(0, trail.pointCount);
+      trail.line.geometry.attributes.position.needsUpdate = true;
+    }
+  }
+
+  clearTrails() {
+    for (const [, trail] of this.trajectoryTrails) {
+      this.scene.remove(trail.line);
+      trail.line.geometry.dispose();
+      trail.line.material.dispose();
+    }
+    this.trajectoryTrails.clear();
+    for (const trail of this.fadingTrails) {
+      this.scene.remove(trail.line);
+      trail.line.geometry.dispose();
+      trail.line.material.dispose();
+    }
+    this.fadingTrails.length = 0;
   }
 
   // ---------- Per-frame update ----------
@@ -309,6 +381,23 @@ export class EffectsManager {
         const grow = 1 + (1 - frac) * 3;
         p.mesh.scale.set(grow, grow, 1);
       }
+    }
+
+    // Fade out finished trajectory trails
+    for (let i = this.fadingTrails.length - 1; i >= 0; i--) {
+      const trail = this.fadingTrails[i];
+      trail.fadeTime += dt;
+
+      if (trail.fadeTime >= trail.maxFadeTime) {
+        this.scene.remove(trail.line);
+        trail.line.geometry.dispose();
+        trail.line.material.dispose();
+        this.fadingTrails.splice(i, 1);
+        continue;
+      }
+
+      const frac = 1 - trail.fadeTime / trail.maxFadeTime;
+      trail.line.material.opacity = trail.startOpacity * frac;
     }
   }
 

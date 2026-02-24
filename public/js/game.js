@@ -256,6 +256,9 @@ function cleanupGameState() {
   }
   boundaryWalls.length = 0;
 
+  // Remove trajectory trails
+  effects.clearTrails();
+
   // Reset interpolation
   stateBuffer.length = 0;
   serverTimeOffset = null;

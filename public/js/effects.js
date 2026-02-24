@@ -11,7 +11,7 @@ export class EffectsManager {
     this._circleTexture = this._makeCircleTexture();
 
     // Shared geometries
-    this._projGeo = new THREE.SphereGeometry(0.6, 8, 8);
+    this._projGeo = new THREE.SphereGeometry(1.2, 8, 8);
     this._projMat = new THREE.MeshPhongMaterial({
       color: 0x111111,
       emissive: 0x331100,
@@ -91,21 +91,21 @@ export class EffectsManager {
 
   // ---------- Water splash ----------
   waterSplash(x, z) {
-    const count = 15;
+    const count = 25;
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const speed = 6 + Math.random() * 14;
+      const speed = 8 + Math.random() * 18;
       const sprite = this._acquireSprite(0x88ccff, 0.7);
-      const s = 0.5 + Math.random() * 1;
+      const s = 1 + Math.random() * 2;
       sprite.scale.set(s, s, 1);
       sprite.position.set(x, 0.5, z);
       this.particles.push({
         mesh: sprite,
         vx: Math.cos(angle) * speed,
-        vy: 12 + Math.random() * 16,
+        vy: 14 + Math.random() * 20,
         vz: Math.sin(angle) * speed,
         life: 0,
-        maxLife: 0.5 + Math.random() * 0.4,
+        maxLife: 0.6 + Math.random() * 0.5,
         gravity: -35
       });
     }
@@ -151,19 +151,19 @@ export class EffectsManager {
     this.waterSplash(x, z);
 
     // Fire particles
-    for (let i = 0; i < 10; i++) {
-      const sprite = this._acquireSprite(i < 5 ? 0xff4400 : 0xffaa00, 0.9);
-      const s = 1 + Math.random() * 2;
+    for (let i = 0; i < 16; i++) {
+      const sprite = this._acquireSprite(i < 8 ? 0xff4400 : 0xffaa00, 0.9);
+      const s = 1.5 + Math.random() * 3;
       sprite.scale.set(s, s, 1);
       sprite.position.set(x, 1, z);
       const a = Math.random() * Math.PI * 2;
       this.particles.push({
         mesh: sprite,
-        vx: Math.cos(a) * (4 + Math.random() * 8),
-        vy: 10 + Math.random() * 14,
-        vz: Math.sin(a) * (4 + Math.random() * 8),
+        vx: Math.cos(a) * (6 + Math.random() * 10),
+        vy: 12 + Math.random() * 18,
+        vz: Math.sin(a) * (6 + Math.random() * 10),
         life: 0,
-        maxLife: 0.35 + Math.random() * 0.25,
+        maxLife: 0.4 + Math.random() * 0.3,
         gravity: -20
       });
     }
@@ -235,7 +235,7 @@ export class EffectsManager {
         group.add(ball);
         // Glow
         const glow = new THREE.Sprite(this._projGlowMat.clone());
-        glow.scale.set(3, 3, 1);
+        glow.scale.set(5, 5, 1);
         group.add(glow);
         // Shadow on water
         const shadowMat = new THREE.SpriteMaterial({
@@ -247,7 +247,7 @@ export class EffectsManager {
           depthWrite: false
         });
         const shadow = new THREE.Sprite(shadowMat);
-        shadow.scale.set(2, 2, 1);
+        shadow.scale.set(3.5, 3.5, 1);
         shadow.renderOrder = -1;
         group._shadow = shadow;
         this.scene.add(shadow);

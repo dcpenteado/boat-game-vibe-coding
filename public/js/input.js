@@ -5,6 +5,7 @@ export class InputManager {
     this.keys = { forward: false, backward: false, left: false, right: false };
     this.shoot = false;
     this.dash = false;
+    this.mine = false;
     this._chargeStart = 0;
 
     document.addEventListener('keydown', (e) => this._onKey(e, true));
@@ -35,6 +36,7 @@ export class InputManager {
         e.preventDefault();
         break;
       case 'ShiftLeft': case 'ShiftRight': this.dash = pressed; e.preventDefault(); break;
+      case 'KeyQ': this.mine = pressed; break;
     }
   }
 
@@ -52,6 +54,7 @@ export class InputManager {
       right:    this.keys.right,
       shoot:    this.shoot,
       dash:     this.dash,
+      mine:     this.mine,
       chargeFraction: this.chargeFraction
     };
   }

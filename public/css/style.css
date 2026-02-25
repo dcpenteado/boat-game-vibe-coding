@@ -611,6 +611,40 @@ canvas { display: block; }
   transition: color 0.2s;
 }
 
+/* Mine Bar */
+#mineBar {
+  position: absolute;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 6px;
+  background: rgba(30, 42, 58, 0.6);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#mineFill {
+  height: 100%;
+  background: linear-gradient(90deg, #e74c3c, #c0392b);
+  border-radius: 3px;
+  width: 100%;
+  transition: width 0.15s linear;
+}
+
+#mineLabel {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #e74c3c;
+  transition: color 0.2s;
+}
+
 /* Buff Icons */
 #buffsContainer {
   position: absolute;

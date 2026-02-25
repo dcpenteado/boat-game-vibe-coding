@@ -19,6 +19,8 @@ export class HUD {
       healthText: document.getElementById('healthText'),
       dashFill: document.getElementById('dashFill'),
       dashLabel: document.getElementById('dashLabel'),
+      mineFill: document.getElementById('mineFill'),
+      mineLabel: document.getElementById('mineLabel'),
       buffsContainer: document.getElementById('buffsContainer'),
       killFeed: document.getElementById('killFeed'),
       scoreboard: document.getElementById('scoreboard'),
@@ -65,6 +67,16 @@ export class HUD {
       ? 'linear-gradient(90deg, #00e59b, #00c080)'
       : 'linear-gradient(90deg, #3498db, #2980b9)';
     this.el.dashLabel.style.color = ready ? '#00e59b' : '#5a6a80';
+  }
+
+  updateMine(cooldown, maxCooldown) {
+    const ready = cooldown <= 0;
+    const pct = ready ? 100 : ((1 - cooldown / maxCooldown) * 100);
+    this.el.mineFill.style.width = pct + '%';
+    this.el.mineFill.style.background = ready
+      ? 'linear-gradient(90deg, #e74c3c, #c0392b)'
+      : 'linear-gradient(90deg, #5a3a3a, #4a2a2a)';
+    this.el.mineLabel.style.color = ready ? '#e74c3c' : '#5a4040';
   }
 
   updateBuffs(buffs) {
@@ -131,7 +143,7 @@ export class HUD {
     this._minimapCache = c;
   }
 
-  updateMinimap(players, islandData, myId, mapSize, powerups) {
+  updateMinimap(players, islandData, myId, mapSize, powerups, mines) {
     const ctx = this.minimapCtx;
     const s = 160;
 
@@ -151,6 +163,18 @@ export class HUD {
         ctx.fillStyle = POWERUP_COLORS_CSS[pu.type] || '#fff';
         ctx.beginPath();
         ctx.arc(px, pz, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Dynamic: mines
+    if (mines) {
+      for (const m of mines) {
+        const mx = (m.x / mapSize + 0.5) * s;
+        const mz = (m.z / mapSize + 0.5) * s;
+        ctx.fillStyle = '#ff3333';
+        ctx.beginPath();
+        ctx.arc(mx, mz, 2.5, 0, Math.PI * 2);
         ctx.fill();
       }
     }

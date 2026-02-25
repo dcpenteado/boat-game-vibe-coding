@@ -11,6 +11,8 @@ export class NetworkManager {
     this.onFull = null;
     this.onRoomList = null;
     this.onRoomError = null;
+    this.onMineDrop = null;
+    this.onMineExplode = null;
     this._lastInputSent = 0;
   }
 

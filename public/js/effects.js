@@ -401,6 +401,29 @@ export class EffectsManager {
     }
   }
 
+  // ---------- Mine explosion ----------
+  mineExplosion(x, z) {
+    this.waterSplash(x, z);
+
+    for (let i = 0; i < 24; i++) {
+      const color = i < 10 ? 0xff2200 : i < 18 ? 0xff6600 : 0xffaa00;
+      const sprite = this._acquireSprite(color, 0.9);
+      const s = 2 + Math.random() * 4;
+      sprite.scale.set(s, s, 1);
+      sprite.position.set(x, 1, z);
+      const a = Math.random() * Math.PI * 2;
+      this.particles.push({
+        mesh: sprite,
+        vx: Math.cos(a) * (8 + Math.random() * 15),
+        vy: 15 + Math.random() * 25,
+        vz: Math.sin(a) * (8 + Math.random() * 15),
+        life: 0,
+        maxLife: 0.5 + Math.random() * 0.4,
+        gravity: -25
+      });
+    }
+  }
+
   // ---------- Dash trail ----------
   dashTrail(x, z, angle) {
     for (let i = 0; i < 20; i++) {

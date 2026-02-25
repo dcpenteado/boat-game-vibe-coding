@@ -46,6 +46,12 @@ export const POWERUP_DURATION = {
   shield: 5.0
 };
 
+// ====== MINES ======
+export const MINE_COOLDOWN = 30.0;
+export const MINE_LIFETIME = 180.0;
+export const MINE_DAMAGE = 100;
+export const MINE_RADIUS = 8;
+
 // ====== GAME ======
 export const MAX_PLAYERS = 10;
 export const PLAYER_COLORS = [

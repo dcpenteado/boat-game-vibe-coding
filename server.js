@@ -23,10 +23,12 @@ function createRoom(name) {
     name,
     players: new Map(),
     projectiles: [],
+    mines: [],
     islands: [],
     powerups: [],
     tickCount: 0,
     nextProjId: 1,
+    nextMineId: 1,
     nextPowerupId: 1,
     lastPowerupSpawn: 0,
     loopInterval: null
@@ -319,6 +321,22 @@ function serverTick(room) {
       });
     }
     p.wasShooting = p.input.shoot;
+
+    // Mine dropping
+    if (p.input.mine && !p.wasMining && p.alive && (now - p.lastMineTime) >= C.MINE_COOLDOWN) {
+      p.lastMineTime = now;
+      const mineX = p.x - Math.sin(p.angle) * C.BOAT_LENGTH * 2;
+      const mineZ = p.z - Math.cos(p.angle) * C.BOAT_LENGTH * 2;
+      room.mines.push({
+        id: room.nextMineId++,
+        ownerId: id,
+        x: mineX,
+        z: mineZ,
+        spawnTime: now
+      });
+      io.to(room.name).emit('mineDrop', { playerId: id, x: mineX, z: mineZ });
+    }
+    p.wasMining = p.input.mine;
   }
 
   // --- Update projectiles (ballistic) ---
@@ -385,11 +403,45 @@ function serverTick(room) {
     }
   }
 
+  // --- Update mines ---
+  for (let i = room.mines.length - 1; i >= 0; i--) {
+    const mine = room.mines[i];
+
+    // Expire after lifetime
+    if (now - mine.spawnTime >= C.MINE_LIFETIME) {
+      room.mines.splice(i, 1);
+      continue;
+    }
+
+    // Check collision with players
+    let detonated = false;
+    for (const [pid, p] of room.players) {
+      if (!p.alive) continue;
+      const dx = mine.x - p.x, dz = mine.z - p.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < C.MINE_RADIUS + C.BOAT_WIDTH) {
+        if (p.buffs.shield > 0) {
+          p.buffs.shield = 0;
+          io.to(room.name).emit('shieldBreak', { playerId: pid, x: mine.x, z: mine.z });
+        } else {
+          p.hp -= C.MINE_DAMAGE;
+          io.to(room.name).emit('mineExplode', { x: mine.x, z: mine.z, targetId: pid });
+          if (p.hp <= 0) killPlayer(p, mine.ownerId, room);
+        }
+        room.mines.splice(i, 1);
+        detonated = true;
+        break;
+      }
+    }
+    if (detonated) continue;
+  }
+
   // --- Broadcast state ---
   const state = {
     tick: room.tickCount,
     players: [],
     projectiles: room.projectiles.map(p => ({ id: p.id, x: p.x, z: p.z, y: p.y })),
+    mines: room.mines.map(m => ({ id: m.id, x: m.x, z: m.z })),
     powerups: room.powerups.map(p => ({ id: p.id, x: p.x, z: p.z, type: p.type }))
   };
   for (const [id, p] of room.players) {
@@ -400,6 +452,7 @@ function serverTick(room) {
       score: p.score, kills: p.kills, deaths: p.deaths,
       dashing: p.dashTimer > 0,
       dashCooldown: Math.max(0, p.dashCooldown),
+      mineCooldown: Math.max(0, C.MINE_COOLDOWN - (now - p.lastMineTime)),
       buffs: {
         speed: p.buffs.speed > 0,
         trishot: p.buffs.trishot > 0,
@@ -495,9 +548,11 @@ io.on('connection', (socket) => {
       vx: 0, vz: 0, speed: 0,
       hp: C.MAX_HP, alive: true, respawnTimer: 0,
       score: 0, kills: 0, deaths: 0,
-      input: { forward: false, backward: false, left: false, right: false, shoot: false, dash: false, chargeFraction: 0 },
+      input: { forward: false, backward: false, left: false, right: false, shoot: false, dash: false, mine: false, chargeFraction: 0 },
       lastFireTime: -C.FIRE_COOLDOWN,
+      lastMineTime: -C.MINE_COOLDOWN,
       wasShooting: false,
+      wasMining: false,
       chargeStart: 0,
       dashTimer: 0,
       dashCooldown: 0,
@@ -536,6 +591,7 @@ io.on('connection', (socket) => {
       p.input.right = !!data.right;
       p.input.shoot = !!data.shoot;
       p.input.dash = !!data.dash;
+      p.input.mine = !!data.mine;
       p.input.chargeFraction = typeof data.chargeFraction === 'number' ? data.chargeFraction : 0;
     }
   });

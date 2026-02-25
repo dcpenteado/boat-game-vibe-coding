@@ -66,6 +66,7 @@ const audio = new AudioManager();
 const boats = new Map();
 const islandMeshes = [];
 const powerupMeshes = new Map();
+const mineMeshes = new Map();
 const boundaryWalls = [];
 let islandData = [];
 let myId = null;
@@ -119,6 +120,45 @@ function createPowerupMesh(pu) {
   group.position.set(pu.x, 5, pu.z);
   group._puId = pu.id;
   group._puType = pu.type;
+  return group;
+}
+
+// ============================================================
+//  MINE 3D MESHES
+// ============================================================
+function createMineMesh(mine) {
+  const group = new THREE.Group();
+
+  // Dark sphere body
+  const bodyGeo = new THREE.SphereGeometry(3, 12, 12);
+  const bodyMat = new THREE.MeshPhongMaterial({
+    color: 0x222222, emissive: 0x110000, emissiveIntensity: 0.3
+  });
+  group.add(new THREE.Mesh(bodyGeo, bodyMat));
+
+  // Red spikes
+  const spikeMat = new THREE.MeshPhongMaterial({
+    color: 0xcc0000, emissive: 0x880000, emissiveIntensity: 0.4
+  });
+  const spikeGeo = new THREE.ConeGeometry(0.8, 2.5, 5);
+  const directions = [
+    [0, 1, 0], [0, -1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1],
+    [0.7, 0.7, 0], [-0.7, 0.7, 0], [0, 0.7, 0.7], [0, 0.7, -0.7]
+  ];
+  for (const [dx, dy, dz] of directions) {
+    const spike = new THREE.Mesh(spikeGeo, spikeMat);
+    spike.position.set(dx * 3.2, dy * 3.2, dz * 3.2);
+    spike.lookAt(dx * 10, dy * 10, dz * 10);
+    group.add(spike);
+  }
+
+  // Red glow light
+  const light = new THREE.PointLight(0xff0000, 0.8, 25);
+  light.position.y = 1;
+  group.add(light);
+
+  group.position.set(mine.x, 1, mine.z);
+  group._mineId = mine.id;
   return group;
 }
 
@@ -250,6 +290,12 @@ function cleanupGameState() {
   }
   powerupMeshes.clear();
 
+  // Remove mines
+  for (const [, mesh] of mineMeshes) {
+    scene.remove(mesh);
+  }
+  mineMeshes.clear();
+
   // Remove boundary walls
   for (const wall of boundaryWalls) {
     scene.remove(wall);
@@ -361,6 +407,22 @@ net.onState = (state) => {
     }
   }
 
+  // Sync mine meshes
+  const activeMineIds = new Set((state.mines || []).map(m => m.id));
+  for (const [id, mesh] of mineMeshes) {
+    if (!activeMineIds.has(id)) {
+      scene.remove(mesh);
+      mineMeshes.delete(id);
+    }
+  }
+  for (const mine of (state.mines || [])) {
+    if (!mineMeshes.has(mine.id)) {
+      const mesh = createMineMesh(mine);
+      scene.add(mesh);
+      mineMeshes.set(mine.id, mesh);
+    }
+  }
+
   hud.updateScoreboard(state.players, myId);
   hud.updatePlayerCount(state.players.length);
 };
@@ -434,6 +496,15 @@ function registerGameEvents() {
     effects.shieldBreak(data.x, data.z);
     audio.shieldBreak();
   });
+  net.socket.on('mineDrop', (data) => {
+    effects.waterSplash(data.x, data.z);
+    audio.splash();
+  });
+  net.socket.on('mineExplode', (data) => {
+    effects.mineExplosion(data.x, data.z);
+    audio.explosion();
+    if (data.targetId === myId) addShake(1.5);
+  });
 }
 
 // ============================================================
@@ -496,7 +567,7 @@ function lerpStates(stateA, stateB, t) {
       players.push(bp);
     }
   }
-  return { players, projectiles: stateB.projectiles, powerups: stateB.powerups };
+  return { players, projectiles: stateB.projectiles, mines: stateB.mines, powerups: stateB.powerups };
 }
 
 function getInterpolatedState() {
@@ -587,6 +658,7 @@ function animate() {
         updateCamera(rx, rz, ra, dt);
         hud.updateHealth(cp.hp);
         hud.updateDash(cp.dashCooldown, 5.0);
+        hud.updateMine(cp.mineCooldown || 0, 30.0);
         hud.updateBuffs(cp.buffs);
 
         if (cp.alive && hud.respawnVisible) hud.hideRespawn();
@@ -595,13 +667,19 @@ function animate() {
     }
 
     effects.updateProjectiles(interpState.projectiles);
-    hud.updateMinimap(interpState.players, islandData, myId, mapSize, interpState.powerups);
+    hud.updateMinimap(interpState.players, islandData, myId, mapSize, interpState.powerups, interpState.mines);
   }
 
   // Animate power-ups
   for (const [, mesh] of powerupMeshes) {
     mesh.position.y = 5 + Math.sin(time * 2 + mesh._puId) * 1.5;
     mesh.rotation.y = time * 1.5;
+  }
+
+  // Animate mines
+  for (const [, mesh] of mineMeshes) {
+    mesh.position.y = 1 + Math.sin(time * 1.5 + mesh._mineId) * 0.4;
+    mesh.rotation.y = time * 0.5;
   }
 
   // Hit indicators

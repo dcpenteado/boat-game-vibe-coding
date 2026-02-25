@@ -53,8 +53,10 @@ export const MINE_DAMAGE = 100;
 export const MINE_RADIUS = 8;
 
 // ====== GAME ======
-export const MAX_PLAYERS = 10;
+export const MAX_PLAYERS = 16;
 export const PLAYER_COLORS = [
   0xe74c3c, 0x3498db, 0x2ecc71, 0xf39c12, 0x9b59b6,
-  0x1abc9c, 0xe67e22, 0xecf0f1, 0xff6b81, 0x7bed9f
+  0x1abc9c, 0xe67e22, 0xecf0f1, 0xff6b81, 0x7bed9f,
+  0x00bcd4, 0xff5722, 0x8bc34a, 0x673ab7, 0xffc107,
+  0x795548
 ];

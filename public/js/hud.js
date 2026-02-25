@@ -236,7 +236,7 @@ export class HUD {
   }
 
   updatePlayerCount(count) {
-    this.el.playerCount.textContent = `${count}/10 Players`;
+    this.el.playerCount.textContent = `${count}/16 Players`;
   }
 
   updateCharge(fraction) {

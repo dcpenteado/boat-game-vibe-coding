@@ -757,7 +757,6 @@ function showLobby() {
   lobbyScreen.style.display = 'flex';
   createRoomError.textContent = '';
   roomNameInput.value = '';
-  roomNameInput.focus();
   if (net.socket) net.getRooms();
 }
 
@@ -780,7 +779,7 @@ function escapeHtml(s) {
 
 function renderRoomList(roomsList) {
   if (!roomsList || roomsList.length === 0) {
-    roomListEl.innerHTML = '<div class="room-empty">No rooms available. Create one!</div>';
+    roomListEl.innerHTML = '<div class="room-empty">No active battles yet. Start one below!</div>';
     return;
   }
 

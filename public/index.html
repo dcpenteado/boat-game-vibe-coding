@@ -15,20 +15,22 @@
       <h1>BARQUINHO</h1>
       <p class="subtitle">Multiplayer Naval Combat</p>
 
-      <div class="lobby-section">
-        <h2>CREATE ROOM</h2>
+      <div class="lobby-section lobby-rooms-section">
+        <h2>JOIN A BATTLE</h2>
+        <div id="roomList" class="room-list">
+          <div class="room-empty">No active battles yet. Start one below!</div>
+        </div>
+      </div>
+
+      <div class="lobby-divider"></div>
+
+      <div class="lobby-section lobby-create-section">
+        <h2>OR CREATE A NEW ROOM</h2>
         <div class="lobby-create">
           <input type="text" id="roomNameInput" placeholder="Room name" maxlength="24" autocomplete="off" spellcheck="false">
           <button id="btnCreateRoom">CREATE</button>
         </div>
         <div id="createRoomError" class="lobby-error"></div>
-      </div>
-
-      <div class="lobby-section">
-        <h2>AVAILABLE ROOMS</h2>
-        <div id="roomList" class="room-list">
-          <div class="room-empty">No rooms available. Create one!</div>
-        </div>
       </div>
     </div>
   </div>

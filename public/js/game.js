@@ -378,16 +378,15 @@ net.onState = (state) => {
 
   for (const p of state.players) {
     if (!boats.has(p.id)) {
-      const boat = new BoatModel(p.color, p.id === myId);
+      const name = p.id === myId ? playerName : p.name;
+      const boat = new BoatModel(p.color, p.id === myId, name);
       scene.add(boat.group);
       boats.set(p.id, boat);
 
-      if (p.id !== myId) {
-        const nameSprite = createNameSprite(p.name, p.color);
-        boat.nameSprite = nameSprite;
-        boat.group.add(nameSprite);
-        nameSprite.position.set(0, 14, 0);
-      }
+      const nameSprite = createNameSprite(name, p.color);
+      boat.nameSprite = nameSprite;
+      boat.group.add(nameSprite);
+      nameSprite.position.set(0, 14, 0);
     }
   }
 

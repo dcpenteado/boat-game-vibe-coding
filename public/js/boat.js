@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export class BoatModel {
-  constructor(color, isLocal) {
+  constructor(color, isLocal, name) {
     this.group = new THREE.Group();
     this.color = color;
     this.isLocal = isLocal;
@@ -13,6 +13,7 @@ export class BoatModel {
     this._buildSail(color);
     this._buildCannon();
     this._buildFlag(color);
+    if (name) this._buildNameOnSail(name, color);
 
     // Scale up the boat for better visibility
     this.group.scale.set(1.1, 1.1, 1.1);
@@ -177,6 +178,45 @@ export class BoatModel {
     flag.position.set(0.7, 11.8, 0.5);
     this.flag = flag;
     this.group.add(flag);
+  }
+
+  _buildNameOnSail(name, color) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+
+    // Transparent background
+    ctx.clearRect(0, 0, 256, 128);
+
+    // Draw name text
+    const hex = '#' + new THREE.Color(color).getHexString();
+    ctx.font = 'bold 36px Outfit, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Dark shadow for contrast
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillText(name, 129, 65);
+
+    // Colored text
+    ctx.fillStyle = hex;
+    ctx.fillText(name, 128, 64);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+
+    const geo = new THREE.PlaneGeometry(3.6, 1.8);
+    const mat = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const nameMesh = new THREE.Mesh(geo, mat);
+    // Position on the main sail, slightly in front
+    nameMesh.position.set(0, 7, 0.6);
+    this.group.add(nameMesh);
   }
 
   setShield(active) {

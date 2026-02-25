@@ -541,7 +541,7 @@ io.on('connection', (socket) => {
     const colorIdx = getNextColorIndex(room);
     const player = {
       id: socket.id,
-      name: (data.name || 'Sailor').substring(0, 16),
+      name: (data.name || 'Sailor').substring(0, 12),
       color: C.PLAYER_COLORS[colorIdx],
       colorIndex: colorIdx,
       x: 0, z: 0, angle: 0,

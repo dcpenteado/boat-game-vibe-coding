@@ -148,7 +148,7 @@ export class HUD {
     this._minimapCache = c;
   }
 
-  updateMinimap(players, islandData, myId, mapSize, powerups, mines) {
+  updateMinimap(players, islandData, myId, mapSize, powerups, mines, kingId) {
     const ctx = this.minimapCtx;
     const s = 160;
 
@@ -190,6 +190,7 @@ export class HUD {
       const px = (p.x / mapSize + 0.5) * s;
       const pz = (p.z / mapSize + 0.5) * s;
       const isMe = p.id === myId;
+      const isKing = p.id === kingId;
 
       if (isMe) {
         ctx.strokeStyle = '#00ff88';
@@ -200,10 +201,24 @@ export class HUD {
         ctx.stroke();
       }
 
-      ctx.fillStyle = isMe ? '#00ff88' : '#ff4444';
+      // King gets gold, self stays green, others red
+      if (isKing && !isMe) {
+        ctx.fillStyle = '#ffd700';
+      } else {
+        ctx.fillStyle = isMe ? '#00ff88' : '#ff4444';
+      }
       ctx.beginPath();
-      ctx.arc(px, pz, isMe ? 4 : 3, 0, Math.PI * 2);
+      ctx.arc(px, pz, isMe ? 4 : (isKing ? 4.5 : 3), 0, Math.PI * 2);
       ctx.fill();
+
+      // Gold ring around king
+      if (isKing) {
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(px, pz, 6, 0, Math.PI * 2);
+        ctx.stroke();
+      }
 
       if (isMe) {
         ctx.strokeStyle = 'rgba(0,255,136,0.3)';
@@ -215,24 +230,42 @@ export class HUD {
     }
   }
 
-  addKillFeedEntry(killer, victim) {
+  addKillFeedEntry(killer, victim, isKingKill = false) {
     const div = document.createElement('div');
-    div.className = 'kill-entry';
-    div.innerHTML = `<span class="killer">${this._esc(killer)}</span> <span class="action">sunk</span> <span class="victim">${this._esc(victim)}</span>`;
+    div.className = 'kill-entry' + (isKingKill ? ' king-kill' : '');
+    if (isKingKill) {
+      div.innerHTML = `<span class="killer">${this._esc(killer)}</span> <span class="action">\u{1F451} dethroned</span> <span class="victim">${this._esc(victim)}</span>`;
+    } else {
+      div.innerHTML = `<span class="killer">${this._esc(killer)}</span> <span class="action">sunk</span> <span class="victim">${this._esc(victim)}</span>`;
+    }
     this.el.killFeed.prepend(div);
     setTimeout(() => div.remove(), 5000);
     while (this.el.killFeed.children.length > 5) this.el.killFeed.lastChild.remove();
   }
 
-  updateScoreboard(players, myId) {
+  addKingChangeEntry(newKingName, wasDethroned) {
+    const div = document.createElement('div');
+    div.className = 'kill-entry king-change';
+    const msg = wasDethroned
+      ? `\u{1F451} ${this._esc(newKingName)} is the new KING!`
+      : `\u{1F451} ${this._esc(newKingName)} became KING!`;
+    div.innerHTML = `<span class="crown-text">${msg}</span>`;
+    this.el.killFeed.prepend(div);
+    setTimeout(() => div.remove(), 6000);
+    while (this.el.killFeed.children.length > 5) this.el.killFeed.lastChild.remove();
+  }
+
+  updateScoreboard(players, myId, kingId) {
     const sorted = [...players].sort((a, b) => b.score - a.score);
-    this.el.scoreboard.innerHTML = sorted.slice(0, 5).map((p, i) =>
-      `<div class="score-row ${p.id === myId ? 'me' : ''}">
+    this.el.scoreboard.innerHTML = sorted.slice(0, 5).map((p, i) => {
+      const isKing = p.id === kingId;
+      const crown = isKing ? '<span class="crown-icon">\u{1F451}</span> ' : '';
+      return `<div class="score-row ${p.id === myId ? 'me' : ''} ${isKing ? 'king' : ''}">
         <span class="rank">#${i + 1}</span>
-        <span class="name">${this._esc(p.name)}</span>
+        <span class="name">${crown}${this._esc(p.name)}</span>
         <span class="score">${p.kills}K / ${p.deaths}D</span>
-      </div>`
-    ).join('');
+      </div>`;
+    }).join('');
   }
 
   updatePlayerCount(count) {

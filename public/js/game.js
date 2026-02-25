@@ -70,6 +70,7 @@ const mineMeshes = new Map();
 const boundaryWalls = [];
 let islandData = [];
 let myId = null;
+let currentKingId = null;
 let mapSize = 3000;
 
 // Interpolation buffer
@@ -422,7 +423,8 @@ net.onState = (state) => {
     }
   }
 
-  hud.updateScoreboard(state.players, myId);
+  currentKingId = state.kingId || null;
+  hud.updateScoreboard(state.players, myId, currentKingId);
   hud.updatePlayerCount(state.players.length);
 };
 
@@ -455,7 +457,7 @@ net.onHit = (data) => {
 };
 
 net.onKill = (data) => {
-  hud.addKillFeedEntry(data.killerName, data.victimName);
+  hud.addKillFeedEntry(data.killerName, data.victimName, data.isKingKill || false);
   if (data.victimId === myId) {
     hud.showRespawn();
     addShake(2.0);
@@ -503,6 +505,29 @@ function registerGameEvents() {
     effects.mineExplosion(data.x, data.z);
     audio.explosion();
     if (data.targetId === myId) addShake(1.5);
+  });
+  net.socket.on('ram', (data) => {
+    effects.ramImpact(data.x, data.z, data.intensity);
+    audio.ram();
+    if (data.playerA === myId || data.playerB === myId) {
+      addShake(1.0 + data.intensity * 1.5);
+      const latestState = stateBuffer.length > 0 ? stateBuffer[stateBuffer.length - 1].state : null;
+      if (latestState) {
+        const me = latestState.players.find(p => p.id === myId);
+        if (me) {
+          const angle = Math.atan2(data.x - me.x, data.z - me.z);
+          hitIndicators.push({ angle, life: 1.5 });
+        }
+      }
+    }
+  });
+  net.socket.on('kingChange', (data) => {
+    if (data.newKingName) {
+      hud.addKingChangeEntry(data.newKingName, !!data.prevKingId);
+    }
+    for (const [id, boat] of boats) {
+      boat.setCrown(id === data.newKingId);
+    }
   });
 }
 
@@ -566,7 +591,7 @@ function lerpStates(stateA, stateB, t) {
       players.push(bp);
     }
   }
-  return { players, projectiles: stateB.projectiles, mines: stateB.mines, powerups: stateB.powerups };
+  return { players, projectiles: stateB.projectiles, mines: stateB.mines, powerups: stateB.powerups, kingId: stateB.kingId };
 }
 
 function getInterpolatedState() {
@@ -648,6 +673,7 @@ function animate() {
 
       boat.update(rx, rz, ra, cp.alive, time);
       boat.setShield(cp.buffs?.shield || false);
+      boat.setCrown(cp.id === currentKingId);
 
       if (cp.alive && Math.abs(cp.speed) > 8) {
         effects.updateWake(cp.id, rx, rz, ra, cp.speed);
@@ -666,7 +692,7 @@ function animate() {
     }
 
     effects.updateProjectiles(interpState.projectiles);
-    hud.updateMinimap(interpState.players, islandData, myId, mapSize, interpState.powerups, interpState.mines);
+    hud.updateMinimap(interpState.players, islandData, myId, mapSize, interpState.powerups, interpState.mines, currentKingId);
   }
 
   // Animate power-ups

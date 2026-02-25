@@ -470,6 +470,46 @@ export class EffectsManager {
     }
   }
 
+  // ---------- Ram impact ----------
+  ramImpact(x, z, intensity) {
+    // Wood debris
+    const debrisCount = Math.floor(10 + intensity * 15);
+    for (let i = 0; i < debrisCount; i++) {
+      const color = Math.random() > 0.5 ? 0x8B6914 : 0x5a3e1b;
+      const sprite = this._acquireSprite(color, 0.9, false);
+      const s = 0.5 + Math.random() * 1.5;
+      sprite.scale.set(s, s, 1);
+      sprite.position.set(x, 2, z);
+      const a = Math.random() * Math.PI * 2;
+      const speed = 10 + Math.random() * 20 * intensity;
+      this.particles.push({
+        mesh: sprite,
+        vx: Math.cos(a) * speed,
+        vy: 8 + Math.random() * 15,
+        vz: Math.sin(a) * speed,
+        life: 0,
+        maxLife: 0.5 + Math.random() * 0.4,
+        gravity: -30
+      });
+    }
+
+    // Reuse water splash
+    this.waterSplash(x, z);
+
+    // Impact flash
+    const flash = this._acquireSprite(0xffee88, 1.0);
+    flash.scale.set(6 + intensity * 4, 6 + intensity * 4, 1);
+    flash.position.set(x, 3, z);
+    this.particles.push({
+      mesh: flash,
+      vx: 0, vy: 0, vz: 0,
+      life: 0, maxLife: 0.15,
+      gravity: 0,
+      scaleDecay: true,
+      startScale: 6 + intensity * 4
+    });
+  }
+
   // ---------- Cleanup ----------
   clearWake(playerId) {
     this.wakes.delete(playerId);

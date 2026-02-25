@@ -31,7 +31,8 @@ function createRoom(name) {
     nextMineId: 1,
     nextPowerupId: 1,
     lastPowerupSpawn: 0,
-    loopInterval: null
+    loopInterval: null,
+    kingId: null
   };
   generateIslands(room);
   room.loopInterval = setInterval(() => serverTick(room), C.TICK_INTERVAL);
@@ -131,18 +132,56 @@ function killPlayer(victim, killerId, room) {
   victim.respawnTimer = C.RESPAWN_TIME;
   victim.deaths++;
   let killerName = 'Ambiente';
+  let isKingKill = false;
+
   if (killerId && room.players.has(killerId)) {
     const killer = room.players.get(killerId);
     killer.kills++;
     killer.score += 100;
     killerName = killer.name;
+
+    // Bounty bonus for killing the king
+    if (room.kingId === victim.id) {
+      killer.score += C.BOUNTY_KILL_BONUS;
+      isKingKill = true;
+    }
   }
   io.to(room.name).emit('kill', {
     victimId: victim.id,
     victimName: victim.name,
     killerId,
-    killerName
+    killerName,
+    isKingKill
   });
+
+  updateKing(room);
+}
+
+function updateKing(room) {
+  let bestId = null;
+  let bestKills = C.BOUNTY_MIN_KILLS - 1;
+
+  for (const [id, p] of room.players) {
+    if (p.kills > bestKills) {
+      bestKills = p.kills;
+      bestId = id;
+    } else if (p.kills === bestKills && bestId !== null) {
+      // Tie-breaking: keep current king
+      if (id === room.kingId) bestId = id;
+    }
+  }
+
+  const prevKing = room.kingId;
+  room.kingId = bestId;
+
+  if (prevKing !== bestId) {
+    const newKingName = bestId ? room.players.get(bestId)?.name : null;
+    io.to(room.name).emit('kingChange', {
+      newKingId: bestId,
+      newKingName,
+      prevKingId: prevKing
+    });
+  }
 }
 
 // ============================================================
@@ -339,6 +378,129 @@ function serverTick(room) {
     p.wasMining = p.input.mine;
   }
 
+  // --- Boat-to-boat ramming collision ---
+  {
+    const playerArray = [...room.players.entries()].filter(([, p]) => p.alive);
+    for (let i = 0; i < playerArray.length; i++) {
+      for (let j = i + 1; j < playerArray.length; j++) {
+        const [idA, pA] = playerArray[i];
+        const [idB, pB] = playerArray[j];
+
+        const dx = pB.x - pA.x;
+        const dz = pB.z - pA.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        const minDist = C.RAM_COLLISION_RADIUS * 2;
+
+        if (dist >= minDist || dist < 0.01) continue;
+
+        // Check cooldown for this pair
+        const pairCooldown = pA.lastRamTime[idB] || 0;
+        if (now - pairCooldown < C.RAM_COOLDOWN) {
+          // Still push apart even on cooldown
+          const overlap = minDist - dist;
+          const nx = dx / dist, nz = dz / dist;
+          pA.x -= nx * overlap * 0.5;
+          pA.z -= nz * overlap * 0.5;
+          pB.x += nx * overlap * 0.5;
+          pB.z += nz * overlap * 0.5;
+          continue;
+        }
+
+        // Direction unit vector from A to B
+        const nx = dx / dist, nz = dz / dist;
+
+        // Relative approach velocity (positive = approaching)
+        const dvx = pA.vx - pB.vx;
+        const dvz = pA.vz - pB.vz;
+        const relativeApproachSpeed = dvx * nx + dvz * nz;
+
+        // Push apart regardless of speed
+        const overlap = minDist - dist;
+        pA.x -= nx * (overlap * 0.5 + 1);
+        pA.z -= nz * (overlap * 0.5 + 1);
+        pB.x += nx * (overlap * 0.5 + 1);
+        pB.z += nz * (overlap * 0.5 + 1);
+
+        // Only deal damage if approaching fast enough
+        if (relativeApproachSpeed < C.RAM_MIN_RELATIVE_SPEED) continue;
+
+        // Calculate damage
+        let baseDamage = Math.min(relativeApproachSpeed * C.RAM_DAMAGE_FACTOR, C.RAM_MAX_DAMAGE);
+
+        // Dash multiplier
+        const aDashing = pA.dashTimer > 0;
+        const bDashing = pB.dashTimer > 0;
+        if (aDashing || bDashing) baseDamage *= C.RAM_DASH_MULTIPLIER;
+
+        // Distribute damage: faster boat takes less
+        const speedA = Math.abs(pA.speed);
+        const speedB = Math.abs(pB.speed);
+        let damageToA, damageToB, rammerId;
+
+        if (speedA >= speedB) {
+          damageToA = Math.round(baseDamage * C.RAM_FASTER_DAMAGE_RATIO);
+          damageToB = Math.round(baseDamage * C.RAM_SLOWER_DAMAGE_RATIO);
+          rammerId = idA;
+        } else {
+          damageToA = Math.round(baseDamage * C.RAM_SLOWER_DAMAGE_RATIO);
+          damageToB = Math.round(baseDamage * C.RAM_FASTER_DAMAGE_RATIO);
+          rammerId = idB;
+        }
+
+        // Shield check A
+        if (damageToA > 0 && pA.buffs.shield > 0) {
+          pA.buffs.shield = 0;
+          io.to(room.name).emit('shieldBreak', { playerId: idA, x: pA.x, z: pA.z });
+          damageToA = 0;
+        }
+        // Shield check B
+        if (damageToB > 0 && pB.buffs.shield > 0) {
+          pB.buffs.shield = 0;
+          io.to(room.name).emit('shieldBreak', { playerId: idB, x: pB.x, z: pB.z });
+          damageToB = 0;
+        }
+
+        // Apply damage A
+        if (damageToA > 0) {
+          pA.hp -= damageToA;
+          io.to(room.name).emit('hit', {
+            x: (pA.x + pB.x) / 2, z: (pA.z + pB.z) / 2,
+            targetId: idA, shooterId: idB, damage: damageToA
+          });
+          if (pA.hp <= 0) killPlayer(pA, idB, room);
+        }
+        // Apply damage B
+        if (damageToB > 0 && pB.alive) {
+          pB.hp -= damageToB;
+          io.to(room.name).emit('hit', {
+            x: (pA.x + pB.x) / 2, z: (pA.z + pB.z) / 2,
+            targetId: idB, shooterId: idA, damage: damageToB
+          });
+          if (pB.hp <= 0) killPlayer(pB, idA, room);
+        }
+
+        // Ram event for VFX
+        io.to(room.name).emit('ram', {
+          x: (pA.x + pB.x) / 2, z: (pA.z + pB.z) / 2,
+          playerA: idA, playerB: idB,
+          intensity: Math.min(1, relativeApproachSpeed / 250)
+        });
+
+        // Knockback
+        pA.speed = -Math.abs(pA.speed) * 0.3 - C.RAM_KNOCKBACK_FORCE * 0.3;
+        pB.speed = -Math.abs(pB.speed) * 0.3 - C.RAM_KNOCKBACK_FORCE * 0.3;
+
+        // Cancel dash on collision
+        if (aDashing) pA.dashTimer = 0;
+        if (bDashing) pB.dashTimer = 0;
+
+        // Set cooldown
+        pA.lastRamTime[idB] = now;
+        pB.lastRamTime[idA] = now;
+      }
+    }
+  }
+
   // --- Update projectiles (ballistic) ---
   for (let i = room.projectiles.length - 1; i >= 0; i--) {
     const proj = room.projectiles[i];
@@ -426,7 +588,7 @@ function serverTick(room) {
         } else {
           p.hp -= C.MINE_DAMAGE;
           io.to(room.name).emit('mineExplode', { x: mine.x, z: mine.z, targetId: pid });
-          if (p.hp <= 0) killPlayer(p, mine.ownerId, room);
+          if (p.hp <= 0) killPlayer(p, mine.ownerId === pid ? null : mine.ownerId, room);
         }
         room.mines.splice(i, 1);
         detonated = true;
@@ -439,6 +601,7 @@ function serverTick(room) {
   // --- Broadcast state ---
   const state = {
     tick: room.tickCount,
+    kingId: room.kingId,
     players: [],
     projectiles: room.projectiles.map(p => ({ id: p.id, x: p.x, z: p.z, y: p.y })),
     mines: room.mines.map(m => ({ id: m.id, x: m.x, z: m.z })),
@@ -475,9 +638,12 @@ function removePlayerFromRoom(socket) {
 
   const p = room.players.get(socket.id);
   console.log(`[-] ${p ? p.name : socket.id} left room "${roomName}"`);
+  const wasKing = room.kingId === socket.id;
   room.players.delete(socket.id);
   socket.leave(roomName);
   socket._roomName = null;
+
+  if (wasKing) updateKing(room);
 
   io.to(roomName).emit('playerLeft', { id: socket.id });
 
@@ -556,7 +722,8 @@ io.on('connection', (socket) => {
       chargeStart: 0,
       dashTimer: 0,
       dashCooldown: 0,
-      buffs: { speed: 0, trishot: 0, shield: 0 }
+      buffs: { speed: 0, trishot: 0, shield: 0 },
+      lastRamTime: {}
     };
     respawnPlayer(player, room);
     room.players.set(socket.id, player);

@@ -242,6 +242,63 @@ export class BoatModel {
     }
   }
 
+  setCrown(active) {
+    if (active && !this.crownMesh) {
+      this.crownMesh = this._buildCrown();
+      this.crownMesh.position.set(0, 18, 0.5);
+      this.group.add(this.crownMesh);
+    } else if (!active && this.crownMesh) {
+      this.group.remove(this.crownMesh);
+      this.crownMesh.traverse((child) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+      });
+      this.crownMesh = null;
+    }
+  }
+
+  _buildCrown() {
+    const group = new THREE.Group();
+    const goldMat = new THREE.MeshPhongMaterial({
+      color: 0xffd700,
+      emissive: 0xaa8800,
+      emissiveIntensity: 0.4,
+      specular: 0xffffff,
+      shininess: 80
+    });
+
+    // Crown band
+    const bandGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.6, 8);
+    group.add(new THREE.Mesh(bandGeo, goldMat));
+
+    // 5 crown points
+    const pointGeo = new THREE.ConeGeometry(0.3, 0.8, 4);
+    for (let i = 0; i < 5; i++) {
+      const angle = (i / 5) * Math.PI * 2;
+      const point = new THREE.Mesh(pointGeo, goldMat);
+      point.position.set(Math.cos(angle) * 1.0, 0.7, Math.sin(angle) * 1.0);
+      group.add(point);
+    }
+
+    // Red gem
+    const gemGeo = new THREE.SphereGeometry(0.15, 6, 6);
+    const gemMat = new THREE.MeshPhongMaterial({
+      color: 0xff0000,
+      emissive: 0xff0000,
+      emissiveIntensity: 0.6
+    });
+    const gem = new THREE.Mesh(gemGeo, gemMat);
+    gem.position.set(0, 0.5, 1.0);
+    group.add(gem);
+
+    // Gold glow
+    const light = new THREE.PointLight(0xffd700, 0.5, 20);
+    light.position.y = 1;
+    group.add(light);
+
+    return group;
+  }
+
   update(x, z, angle, alive, time) {
     this.group.position.x = x;
     this.group.position.z = z;
@@ -259,10 +316,23 @@ export class BoatModel {
       if (this.flag) {
         this.flag.rotation.y = Math.sin(t * 3) * 0.2;
       }
+      // Crown animation
+      if (this.crownMesh) {
+        this.crownMesh.rotation.y = t * 0.5;
+        this.crownMesh.position.y = 18 + Math.sin(t * 2) * 0.3;
+      }
     }
   }
 
   dispose(scene) {
+    if (this.crownMesh) {
+      this.group.remove(this.crownMesh);
+      this.crownMesh.traverse((child) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+      });
+      this.crownMesh = null;
+    }
     scene.remove(this.group);
     this.group.traverse((child) => {
       if (child.geometry) child.geometry.dispose();

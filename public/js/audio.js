@@ -14,7 +14,7 @@ export class AudioManager {
     if (this._initialized) return;
     this._initialized = true;
 
-    const sfxNames = ['fire', 'hit', 'explosion', 'splash', 'dash', 'powerup', 'shield_break'];
+    const sfxNames = ['fire', 'hit', 'explosion', 'splash', 'dash', 'powerup', 'shield_break', 'ram'];
     for (const name of sfxNames) {
       this._sounds[name] = new Audio(`sounds/${name}.mp3`);
       this._sounds[name].volume = this._sfxVolume;
@@ -47,6 +47,7 @@ export class AudioManager {
   dash() { this._play('dash'); }
   powerup() { this._play('powerup'); }
   shieldBreak() { this._play('shield_break'); }
+  ram() { this._play('ram'); }
 
   toggleMusic() {
     if (!this._music) return this._musicPlaying;

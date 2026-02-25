@@ -468,7 +468,7 @@ canvas { display: block; }
 /* Scoreboard */
 #scoreboard {
   position: absolute;
-  top: 20px;
+  top: 44px;
   left: 20px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
@@ -493,6 +493,25 @@ canvas { display: block; }
 .score-row .rank { color: var(--warn); min-width: 24px; }
 .score-row .name { color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; }
 .score-row .score { color: var(--text-dim); white-space: nowrap; }
+
+.score-row.king {
+  border-left: 2px solid #ffd700;
+  background: rgba(255, 215, 0, 0.08);
+}
+.score-row.king .rank { color: #ffd700; }
+.crown-icon { font-size: 12px; }
+
+.kill-entry.king-kill {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+.kill-entry.king-kill .action { color: #ffd700; opacity: 1; }
+
+.kill-entry.king-change {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+}
+.crown-text { color: #ffd700; font-weight: 700; }
 
 /* Player Count */
 #playerCount {

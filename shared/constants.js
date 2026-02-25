@@ -52,6 +52,21 @@ export const MINE_LIFETIME = 180.0;
 export const MINE_DAMAGE = 100;
 export const MINE_RADIUS = 8;
 
+// ====== RAMMING ======
+export const RAM_COLLISION_RADIUS = 8;
+export const RAM_MIN_RELATIVE_SPEED = 40;
+export const RAM_DAMAGE_FACTOR = 0.4;
+export const RAM_MAX_DAMAGE = 80;
+export const RAM_KNOCKBACK_FORCE = 120;
+export const RAM_COOLDOWN = 1.0;
+export const RAM_DASH_MULTIPLIER = 1.5;
+export const RAM_SLOWER_DAMAGE_RATIO = 0.65;
+export const RAM_FASTER_DAMAGE_RATIO = 0.35;
+
+// ====== BOUNTY ======
+export const BOUNTY_MIN_KILLS = 3;
+export const BOUNTY_KILL_BONUS = 100;
+
 // ====== GAME ======
 export const MAX_PLAYERS = 16;
 export const PLAYER_COLORS = [

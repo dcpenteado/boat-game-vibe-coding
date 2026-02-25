@@ -577,72 +577,86 @@ canvas { display: block; }
   color: var(--warn);
 }
 
-/* Dash Bar */
-#dashBar {
+/* Cooldown Bars Container (left side, vertical) */
+#cooldownBars {
   position: absolute;
-  bottom: 72px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 140px;
+  left: 20px;
+  bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cooldown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cooldown-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+#dashIcon {
+  background: rgba(0, 229, 155, 0.2);
+  color: #00e59b;
+  border-color: rgba(0, 229, 155, 0.3);
+}
+
+#mineIcon {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+.cooldown-track {
+  width: 80px;
   height: 6px;
   background: rgba(30, 42, 58, 0.6);
   border-radius: 3px;
   overflow: hidden;
+}
+
+.cooldown-fill {
+  height: 100%;
+  border-radius: 3px;
+  width: 100%;
+  transition: width 0.15s linear;
 }
 
 #dashFill {
-  height: 100%;
   background: linear-gradient(90deg, #00e59b, #00c080);
-  border-radius: 3px;
-  width: 100%;
-  transition: width 0.15s linear;
-}
-
-#dashLabel {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--accent);
-  transition: color 0.2s;
-}
-
-/* Mine Bar */
-#mineBar {
-  position: absolute;
-  bottom: 52px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 140px;
-  height: 6px;
-  background: rgba(30, 42, 58, 0.6);
-  border-radius: 3px;
-  overflow: hidden;
 }
 
 #mineFill {
-  height: 100%;
   background: linear-gradient(90deg, #e74c3c, #c0392b);
-  border-radius: 3px;
-  width: 100%;
-  transition: width 0.15s linear;
 }
 
-#mineLabel {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
+.cooldown-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 2px;
-  color: #e74c3c;
+  letter-spacing: 1px;
+  min-width: 30px;
   transition: color 0.2s;
+}
+
+#dashLabel {
+  color: #00e59b;
+}
+
+#mineLabel {
+  color: #e74c3c;
 }
 
 /* Buff Icons */

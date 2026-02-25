@@ -853,13 +853,6 @@ btnBackToLobby.addEventListener('click', showLobby);
 // Leave room button (in-game)
 btnLeaveRoom.addEventListener('click', leaveRoom);
 
-// Music toggle
-const musicBtn = document.getElementById('musicToggle');
-musicBtn.addEventListener('click', () => {
-  const playing = audio.toggleMusic();
-  musicBtn.classList.toggle('muted', !playing);
-});
-
 // Connect socket and show lobby on load
 net.connect();
 showLobby();

@@ -54,8 +54,18 @@
       <span id="healthText">100</span>
     </div>
     <div id="chargeBar" style="display:none"><div id="chargeFill"></div><span id="chargeLabel">CHARGE</span></div>
-    <div id="dashBar"><div id="dashFill"></div><span id="dashLabel">DASH</span></div>
-    <div id="mineBar"><div id="mineFill"></div><span id="mineLabel">MINE [Q]</span></div>
+    <div id="cooldownBars">
+      <div class="cooldown-item" id="dashBar">
+        <div class="cooldown-icon" id="dashIcon">&#x21E7;</div>
+        <div class="cooldown-track"><div class="cooldown-fill" id="dashFill"></div></div>
+        <span class="cooldown-label" id="dashLabel">DASH</span>
+      </div>
+      <div class="cooldown-item" id="mineBar">
+        <div class="cooldown-icon" id="mineIcon">&#x2738;</div>
+        <div class="cooldown-track"><div class="cooldown-fill" id="mineFill"></div></div>
+        <span class="cooldown-label" id="mineLabel">Q</span>
+      </div>
+    </div>
     <div id="buffsContainer"></div>
     <div id="minimap"><canvas id="minimapCanvas" width="160" height="160"></canvas></div>
     <div id="killFeed"></div>
@@ -64,8 +74,7 @@
     <div id="hitIndicators"></div>
     <div id="powerupNotification" style="display:none"></div>
     <div id="fpsCounter">0 FPS</div>
-    <button id="musicToggle" title="Toggle Music">&#9835;</button>
-    <button id="btnLeaveRoom" title="Leave room">LEAVE</button>
+<button id="btnLeaveRoom" title="Leave room">LEAVE</button>
     <div id="respawnOverlay" style="display:none">
       <div class="respawn-content">
         <span class="respawn-text">SUNK!</span>

@@ -19,8 +19,10 @@ export class HUD {
       healthText: document.getElementById('healthText'),
       dashFill: document.getElementById('dashFill'),
       dashLabel: document.getElementById('dashLabel'),
+      dashIcon: document.getElementById('dashIcon'),
       mineFill: document.getElementById('mineFill'),
       mineLabel: document.getElementById('mineLabel'),
+      mineIcon: document.getElementById('mineIcon'),
       buffsContainer: document.getElementById('buffsContainer'),
       killFeed: document.getElementById('killFeed'),
       scoreboard: document.getElementById('scoreboard'),
@@ -67,6 +69,7 @@ export class HUD {
       ? 'linear-gradient(90deg, #00e59b, #00c080)'
       : 'linear-gradient(90deg, #3498db, #2980b9)';
     this.el.dashLabel.style.color = ready ? '#00e59b' : '#5a6a80';
+    this.el.dashIcon.style.opacity = ready ? '1' : '0.4';
   }
 
   updateMine(cooldown, maxCooldown) {
@@ -77,6 +80,7 @@ export class HUD {
       ? 'linear-gradient(90deg, #e74c3c, #c0392b)'
       : 'linear-gradient(90deg, #5a3a3a, #4a2a2a)';
     this.el.mineLabel.style.color = ready ? '#e74c3c' : '#5a4040';
+    this.el.mineIcon.style.opacity = ready ? '1' : '0.4';
   }
 
   updateBuffs(buffs) {

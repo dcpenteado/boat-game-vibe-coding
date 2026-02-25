@@ -125,6 +125,12 @@ canvas { display: block; }
   background: radial-gradient(ellipse at center, #0c1a2e 0%, #06080e 100%);
 }
 
+.lobby-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
 .lobby-box {
   text-align: center;
   background: var(--surface);
@@ -185,6 +191,82 @@ canvas { display: block; }
   font-size: 10px;
   color: var(--text-dim);
   opacity: 0.7;
+}
+
+/* ---------- Weekly Ranking Card ---------- */
+.ranking-card {
+  width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.ranking-card h2 {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--warn);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ranking-list .room-empty {
+  font-size: 11px;
+  padding: 12px 0;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.ranking-item:hover {
+  background: var(--surface2);
+}
+
+.ranking-item .rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--text-dim);
+  min-width: 18px;
+  text-align: center;
+}
+
+.ranking-item:nth-child(1) .rank { color: #ffd700; }
+.ranking-item:nth-child(2) .rank { color: #c0c0c0; }
+.ranking-item:nth-child(3) .rank { color: #cd7f32; }
+
+.ranking-item .ranking-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-item .ranking-kills {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 10px;
+  color: var(--accent);
+  white-space: nowrap;
 }
 
 .lobby-create {

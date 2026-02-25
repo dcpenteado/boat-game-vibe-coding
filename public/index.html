@@ -11,26 +11,35 @@
 <body>
   <!-- Lobby Screen (rooms) — shown first -->
   <div id="lobbyScreen">
-    <div class="lobby-box">
-      <h1>BARQUINHO</h1>
-      <p class="subtitle">Multiplayer Naval Combat</p>
+    <div class="lobby-layout">
+      <div class="lobby-box">
+        <h1>BARQUINHO</h1>
+        <p class="subtitle">Multiplayer Naval Combat</p>
 
-      <div class="lobby-section lobby-rooms-section">
-        <h2>JOIN A BATTLE</h2>
-        <div id="roomList" class="room-list">
-          <div class="room-empty">No active battles yet. Start one below!</div>
+        <div class="lobby-section lobby-rooms-section">
+          <h2>JOIN A BATTLE</h2>
+          <div id="roomList" class="room-list">
+            <div class="room-empty">No active battles yet. Start one below!</div>
+          </div>
+        </div>
+
+        <div class="lobby-divider"></div>
+
+        <div class="lobby-section lobby-create-section">
+          <h2>OR CREATE A NEW ROOM</h2>
+          <div class="lobby-create">
+            <input type="text" id="roomNameInput" placeholder="Room name" maxlength="24" autocomplete="off" spellcheck="false">
+            <button id="btnCreateRoom">CREATE</button>
+          </div>
+          <div id="createRoomError" class="lobby-error"></div>
         </div>
       </div>
 
-      <div class="lobby-divider"></div>
-
-      <div class="lobby-section lobby-create-section">
-        <h2>OR CREATE A NEW ROOM</h2>
-        <div class="lobby-create">
-          <input type="text" id="roomNameInput" placeholder="Room name" maxlength="24" autocomplete="off" spellcheck="false">
-          <button id="btnCreateRoom">CREATE</button>
+      <div class="ranking-card">
+        <h2>WEEKLY TOP</h2>
+        <div id="weeklyRanking" class="ranking-list">
+          <div class="room-empty">No battles this week yet.</div>
         </div>
-        <div id="createRoomError" class="lobby-error"></div>
       </div>
     </div>
   </div>

@@ -749,6 +749,7 @@ const createRoomError = document.getElementById('createRoomError');
 const selectedRoomLabel = document.getElementById('selectedRoomLabel');
 const btnBackToLobby = document.getElementById('btnBackToLobby');
 const btnLeaveRoom = document.getElementById('btnLeaveRoom');
+const weeklyRankingEl = document.getElementById('weeklyRanking');
 
 let selectedRoom = null;
 
@@ -757,7 +758,10 @@ function showLobby() {
   lobbyScreen.style.display = 'flex';
   createRoomError.textContent = '';
   roomNameInput.value = '';
-  if (net.socket) net.getRooms();
+  if (net.socket) {
+    net.getRooms();
+    net.getRanking();
+  }
 }
 
 function showNameInput(roomName) {
@@ -805,6 +809,21 @@ function renderRoomList(roomsList) {
   });
 }
 
+function renderRanking(entries) {
+  if (!entries || entries.length === 0) {
+    weeklyRankingEl.innerHTML = '<div class="room-empty">No battles this week yet.</div>';
+    return;
+  }
+
+  weeklyRankingEl.innerHTML = entries.map((e, i) => {
+    return `<div class="ranking-item">
+      <span class="rank">#${i + 1}</span>
+      <span class="ranking-name">${escapeHtml(e.name)}</span>
+      <span class="ranking-kills">${e.kills} kills</span>
+    </div>`;
+  }).join('');
+}
+
 function joinRoomAndPlay(roomName) {
   showGame();
   registerGameEvents();
@@ -831,6 +850,10 @@ net.onRoomList = (list) => {
 
 net.onRoomError = (msg) => {
   createRoomError.textContent = msg;
+};
+
+net.onRanking = (entries) => {
+  renderRanking(entries);
 };
 
 // ============================================================

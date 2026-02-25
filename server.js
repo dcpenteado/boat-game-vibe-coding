@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import * as C from './shared/constants.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -47,6 +48,76 @@ function destroyRoom(name) {
   clearInterval(room.loopInterval);
   rooms.delete(name);
   console.log(`[ROOM] Destroyed: "${name}"`);
+}
+
+// ============================================================
+//  WEEKLY RANKING
+// ============================================================
+const RANKING_DIR = join(__dirname, 'data');
+const RANKING_FILE = join(RANKING_DIR, 'ranking.json');
+const MAX_RANKING_ENTRIES = 10;
+
+function getWeekStart() {
+  const now = new Date();
+  const day = now.getUTCDay() || 7; // Monday = 1
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day + 1));
+  return monday.toISOString();
+}
+
+function loadRanking() {
+  if (!existsSync(RANKING_DIR)) mkdirSync(RANKING_DIR, { recursive: true });
+
+  if (!existsSync(RANKING_FILE)) {
+    return { weekStart: getWeekStart(), entries: [] };
+  }
+
+  try {
+    const data = JSON.parse(readFileSync(RANKING_FILE, 'utf-8'));
+    if (data.weekStart !== getWeekStart()) {
+      console.log('[RANKING] New week detected, resetting ranking.');
+      return { weekStart: getWeekStart(), entries: [] };
+    }
+    return data;
+  } catch {
+    return { weekStart: getWeekStart(), entries: [] };
+  }
+}
+
+function saveRanking(ranking) {
+  if (!existsSync(RANKING_DIR)) mkdirSync(RANKING_DIR, { recursive: true });
+  writeFileSync(RANKING_FILE, JSON.stringify(ranking, null, 2), 'utf-8');
+}
+
+let ranking = loadRanking();
+
+function updateRanking(playerName, kills) {
+  if (kills <= 0) return false;
+
+  // Check for weekly reset
+  if (ranking.weekStart !== getWeekStart()) {
+    ranking = { weekStart: getWeekStart(), entries: [] };
+  }
+
+  const existing = ranking.entries.find(e => e.name === playerName);
+
+  if (existing) {
+    if (kills <= existing.kills) return false;
+    existing.kills = kills;
+    existing.date = new Date().toISOString();
+  } else {
+    ranking.entries.push({
+      name: playerName,
+      kills,
+      date: new Date().toISOString()
+    });
+  }
+
+  // Sort descending by kills, keep top entries
+  ranking.entries.sort((a, b) => b.kills - a.kills);
+  ranking.entries = ranking.entries.slice(0, MAX_RANKING_ENTRIES);
+
+  saveRanking(ranking);
+  return true;
 }
 
 function getRoomList() {
@@ -637,6 +708,12 @@ function removePlayerFromRoom(socket) {
   if (!room) return;
 
   const p = room.players.get(socket.id);
+  // Update weekly ranking before removing player
+  if (p && p.kills > 0) {
+    if (updateRanking(p.name, p.kills)) {
+      io.emit('ranking', ranking.entries);
+    }
+  }
   console.log(`[-] ${p ? p.name : socket.id} left room "${roomName}"`);
   const wasKing = room.kingId === socket.id;
   room.players.delete(socket.id);
@@ -666,8 +743,9 @@ function broadcastRoomList() {
 io.on('connection', (socket) => {
   console.log(`[+] ${socket.id} connected`);
 
-  // Send current room list on connect
+  // Send current room list and ranking on connect
   socket.emit('roomList', getRoomList());
+  socket.emit('ranking', ranking.entries);
 
   // Create a new room
   socket.on('createRoom', (data, callback) => {
@@ -743,6 +821,10 @@ io.on('connection', (socket) => {
 
   socket.on('getRooms', () => {
     socket.emit('roomList', getRoomList());
+  });
+
+  socket.on('getRanking', () => {
+    socket.emit('ranking', ranking.entries);
   });
 
   socket.on('input', (data) => {

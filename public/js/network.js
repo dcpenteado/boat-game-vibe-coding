@@ -11,6 +11,7 @@ export class NetworkManager {
     this.onFull = null;
     this.onRoomList = null;
     this.onRoomError = null;
+    this.onRanking = null;
     this.onMineDrop = null;
     this.onMineExplode = null;
     this._lastInputSent = 0;
@@ -28,6 +29,7 @@ export class NetworkManager {
     this.socket.on('playerLeft', (data) => this.onPlayerLeft?.(data));
     this.socket.on('roomList', (data) => this.onRoomList?.(data));
     this.socket.on('roomError', (msg) => this.onRoomError?.(msg));
+    this.socket.on('ranking', (data) => this.onRanking?.(data));
   }
 
   createRoom(roomName, callback) {
@@ -44,6 +46,10 @@ export class NetworkManager {
 
   getRooms() {
     if (this.socket) this.socket.emit('getRooms');
+  }
+
+  getRanking() {
+    if (this.socket) this.socket.emit('getRanking');
   }
 
   sendInput(inputState) {

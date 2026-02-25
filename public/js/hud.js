@@ -32,7 +32,8 @@ export class HUD {
       hitIndicators: document.getElementById('hitIndicators'),
       powerupNotification: document.getElementById('powerupNotification'),
       chargeBar: document.getElementById('chargeBar'),
-      chargeFill: document.getElementById('chargeFill')
+      chargeFill: document.getElementById('chargeFill'),
+      chargeIcon: document.getElementById('chargeIcon')
     };
     this.minimapCtx = this.el.minimapCanvas.getContext('2d');
     this._minimapCache = null;
@@ -239,7 +240,7 @@ export class HUD {
   }
 
   updateCharge(fraction) {
-    this.el.chargeBar.style.display = 'block';
+    this.el.chargeBar.style.display = 'flex';
     this.el.chargeFill.style.width = (fraction * 100) + '%';
   }
 

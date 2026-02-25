@@ -545,36 +545,22 @@ canvas { display: block; }
 
 /* Charge Bar */
 #chargeBar {
-  position: absolute;
-  bottom: 62px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 180px;
-  height: 8px;
-  background: rgba(30, 42, 58, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  overflow: hidden;
+  display: none;
 }
 
 #chargeFill {
-  height: 100%;
   background: linear-gradient(90deg, #3498db, #e74c3c);
-  border-radius: 4px;
-  width: 0%;
   transition: width 0.05s linear;
 }
 
+#chargeIcon {
+  background: rgba(243, 156, 18, 0.2);
+  color: #f39c12;
+  border-color: rgba(243, 156, 18, 0.3);
+}
+
 #chargeLabel {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--warn);
+  color: #f39c12;
 }
 
 /* Cooldown Bars Container (left side, vertical) */

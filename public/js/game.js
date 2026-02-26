@@ -19,6 +19,11 @@ const POWERUP_COLORS = {
 };
 
 // ============================================================
+//  MOBILE DETECTION
+// ============================================================
+const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+// ============================================================
 //  THREE.JS SCENE
 // ============================================================
 const scene = new THREE.Scene();
@@ -26,16 +31,41 @@ scene.fog = new THREE.FogExp2(0x1a3050, 0.00025);
 scene.background = new THREE.Color(0x1a3050);
 
 const camera = new THREE.PerspectiveCamera(
-  55, window.innerWidth / window.innerHeight, 1, 6000
+  isMobile ? 65 : 55, window.innerWidth / window.innerHeight, 1, 6000
 );
 camera.position.set(0, 50, -80);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+const renderer = new THREE.WebGLRenderer({
+  antialias: !isMobile,
+  alpha: false,
+  powerPreference: isMobile ? 'high-performance' : 'default'
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.5;
 document.body.appendChild(renderer.domElement);
+
+// ============================================================
+//  MOBILE TOUCH PREVENTION
+// ============================================================
+if (isMobile) {
+  document.body.style.touchAction = 'none';
+
+  // Prevent iOS rubber-band scroll (allow in lobby/join for scrolling)
+  document.addEventListener('touchmove', (e) => {
+    if (e.target.closest('#lobbyScreen') || e.target.closest('#joinScreen')) return;
+    e.preventDefault();
+  }, { passive: false });
+
+  // Prevent double-tap zoom
+  let lastTap = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTap < 300) e.preventDefault();
+    lastTap = now;
+  }, { passive: false });
+}
 
 // ============================================================
 //  LIGHTING
@@ -49,12 +79,12 @@ scene.add(new THREE.HemisphereLight(0x88bbff, 0x224466, 0.3));
 // ============================================================
 //  WATER + SKY
 // ============================================================
-const waterObj = createWater(scene, renderer);
+const waterObj = createWater(scene, renderer, isMobile);
 
 // ============================================================
 //  MODULES
 // ============================================================
-const effects = new EffectsManager(scene);
+const effects = new EffectsManager(scene, isMobile);
 const input = new InputManager();
 const hud = new HUD();
 const net = new NetworkManager();
@@ -626,6 +656,11 @@ let running = false;
 let fpsFrames = 0, fpsLastTime = performance.now();
 const fpsEl = document.getElementById('fpsCounter');
 
+// Touch button refs (cached for render loop)
+const touchFireBtn = document.getElementById('touchFireBtn');
+const touchDashBtn = document.getElementById('touchDashBtn');
+const touchMineBtn = document.getElementById('touchMineBtn');
+
 function animate() {
   if (!running) return;
   requestAnimationFrame(animate);
@@ -715,10 +750,23 @@ function animate() {
   hud.updateHitIndicators(hitIndicators);
 
   // Charge bar
-  if (input.shoot) {
+  const shooting = input.getState().shoot;
+  if (shooting) {
     hud.updateCharge(input.chargeFraction);
   } else {
     hud.hideCharge();
+  }
+
+  // Touch button visual feedback
+  if (input.hasTouchControls) {
+    if (touchFireBtn) touchFireBtn.classList.toggle('charging', input.touchShoot);
+    if (interpState) {
+      const me = interpState.players.find(p => p.id === myId);
+      if (me) {
+        if (touchDashBtn) touchDashBtn.classList.toggle('on-cooldown', me.dashCooldown > 0);
+        if (touchMineBtn) touchMineBtn.classList.toggle('on-cooldown', (me.mineCooldown || 0) > 0);
+      }
+    }
   }
 
   updateWater(waterObj, dt);

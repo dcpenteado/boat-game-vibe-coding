@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
 export class EffectsManager {
-  constructor(scene) {
+  constructor(scene, isMobile = false) {
     this.scene = scene;
+    this.isMobile = isMobile;
     this.particles = [];
     this.wakes = new Map();
     this.projectileMeshes = new Map();
@@ -33,7 +34,7 @@ export class EffectsManager {
 
     // Sprite pool
     this._pool = [];
-    const POOL_SIZE = 120;
+    const POOL_SIZE = isMobile ? 60 : 120;
     for (let i = 0; i < POOL_SIZE; i++) {
       const mat = new THREE.SpriteMaterial({
         map: this._circleTexture,
@@ -95,7 +96,7 @@ export class EffectsManager {
 
   // ---------- Water splash ----------
   waterSplash(x, z) {
-    const count = 25;
+    const count = this.isMobile ? 12 : 25;
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
       const speed = 8 + Math.random() * 18;
@@ -132,7 +133,8 @@ export class EffectsManager {
     });
 
     // Smoke puffs
-    for (let i = 0; i < 4; i++) {
+    const smokeCount = this.isMobile ? 2 : 4;
+    for (let i = 0; i < smokeCount; i++) {
       const smoke = this._acquireSprite(0x888888, 0.5, false);
       smoke.scale.set(1.5, 1.5, 1);
       smoke.position.set(fx, 3, fz);
@@ -155,7 +157,8 @@ export class EffectsManager {
     this.waterSplash(x, z);
 
     // Fire particles
-    for (let i = 0; i < 16; i++) {
+    const fireCount = this.isMobile ? 8 : 16;
+    for (let i = 0; i < fireCount; i++) {
       const sprite = this._acquireSprite(i < 8 ? 0xff4400 : 0xffaa00, 0.9);
       const s = 1.5 + Math.random() * 3;
       sprite.scale.set(s, s, 1);
@@ -405,7 +408,8 @@ export class EffectsManager {
   mineExplosion(x, z) {
     this.waterSplash(x, z);
 
-    for (let i = 0; i < 24; i++) {
+    const mineFireCount = this.isMobile ? 12 : 24;
+    for (let i = 0; i < mineFireCount; i++) {
       const color = i < 10 ? 0xff2200 : i < 18 ? 0xff6600 : 0xffaa00;
       const sprite = this._acquireSprite(color, 0.9);
       const s = 2 + Math.random() * 4;
@@ -426,7 +430,8 @@ export class EffectsManager {
 
   // ---------- Dash trail ----------
   dashTrail(x, z, angle) {
-    for (let i = 0; i < 20; i++) {
+    const dashCount = this.isMobile ? 10 : 20;
+    for (let i = 0; i < dashCount; i++) {
       const offset = i * 3;
       const bx = x - Math.sin(angle) * offset;
       const bz = z - Math.cos(angle) * offset;
@@ -453,8 +458,9 @@ export class EffectsManager {
 
   // ---------- Shield break ----------
   shieldBreak(x, z) {
-    for (let i = 0; i < 16; i++) {
-      const a = (i / 16) * Math.PI * 2;
+    const shieldCount = this.isMobile ? 8 : 16;
+    for (let i = 0; i < shieldCount; i++) {
+      const a = (i / shieldCount) * Math.PI * 2;
       const sprite = this._acquireSprite(0x3498db, 0.8);
       sprite.scale.set(2, 2, 1);
       sprite.position.set(x, 3, z);

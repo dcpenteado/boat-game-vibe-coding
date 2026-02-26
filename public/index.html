@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Sink or Sail  - Naval Combat</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,7 +49,7 @@
     <div class="join-box">
       <h1>Sink or Sail</h1>
       <p class="subtitle" id="selectedRoomLabel"></p>
-      <input type="text" id="nameInput" placeholder="Your name" maxlength="12" autocomplete="off" spellcheck="false">
+      <input type="text" id="nameInput" placeholder="Your name" maxlength="12" autocomplete="off" spellcheck="false" inputmode="text" enterkeyhint="go">
       <button id="btnJoin">PLAY</button>
       <div class="controls-hint">
         <span>WASD</span> move &nbsp;|&nbsp; <span>SPACE</span> / <span>CLICK</span> hold & release to fire &nbsp;|&nbsp; <span>SHIFT</span> dash &nbsp;|&nbsp; <span>Q</span> mine
@@ -60,6 +60,13 @@
 
   <!-- Game HUD -->
   <div id="hud" style="display:none">
+    <!-- Touch Controls (mobile only, shown via JS) -->
+    <div id="touchControls" style="display:none">
+      <div id="joystickZone"></div>
+      <div id="touchFireBtn" class="touch-btn touch-fire">FIRE</div>
+      <div id="touchDashBtn" class="touch-btn touch-dash">DASH</div>
+      <div id="touchMineBtn" class="touch-btn touch-mine">MINE</div>
+    </div>
     <div id="healthBar">
       <div id="healthFill"></div>
       <span id="healthText">100</span>
@@ -107,6 +114,7 @@
   }
   </script>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.2/dist/nipplejs.min.js"></script>
   <script type="module" src="js/game.js"></script>
 </body>
 </html>

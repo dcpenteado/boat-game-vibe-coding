@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Water } from 'three/addons/objects/Water.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 
-export function createWater(scene, renderer) {
+export function createWater(scene, renderer, isMobile = false) {
   // --- Sky ---
   const sky = new Sky();
   sky.scale.setScalar(10000);
@@ -34,8 +34,8 @@ export function createWater(scene, renderer) {
   // --- Water ---
   const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
   const water = new Water(waterGeometry, {
-    textureWidth: 512,
-    textureHeight: 512,
+    textureWidth: isMobile ? 256 : 512,
+    textureHeight: isMobile ? 256 : 512,
     waterNormals: new THREE.TextureLoader().load(
       'textures/waternormals.jpg',
       (texture) => {

@@ -878,3 +878,325 @@ canvas { display: block; }
   user-select: none;
   -webkit-user-select: none;
 }
+
+/* ==================== TOUCH CONTROLS ==================== */
+#touchControls {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+#joystickZone {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 45%;
+  height: 50%;
+  pointer-events: auto;
+}
+
+.touch-btn {
+  position: absolute;
+  pointer-events: auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: transform 0.1s, opacity 0.1s;
+}
+
+.touch-btn:active {
+  transform: scale(0.9);
+  opacity: 0.7;
+}
+
+.touch-fire {
+  right: 24px;
+  bottom: 100px;
+  width: 90px;
+  height: 90px;
+  font-size: 14px;
+  background: radial-gradient(circle, rgba(231, 76, 60, 0.6), rgba(192, 57, 43, 0.8));
+  border: 2px solid rgba(231, 76, 60, 0.7);
+  box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+}
+
+.touch-fire.charging {
+  background: radial-gradient(circle, rgba(243, 156, 18, 0.7), rgba(231, 76, 60, 0.9));
+  border-color: rgba(243, 156, 18, 0.8);
+  box-shadow: 0 0 30px rgba(243, 156, 18, 0.5);
+  transform: scale(1.05);
+}
+
+.touch-dash {
+  right: 130px;
+  bottom: 60px;
+  width: 60px;
+  height: 60px;
+  font-size: 10px;
+  background: radial-gradient(circle, rgba(0, 229, 155, 0.5), rgba(0, 192, 128, 0.7));
+  border: 2px solid rgba(0, 229, 155, 0.6);
+  box-shadow: 0 0 15px rgba(0, 229, 155, 0.2);
+}
+
+.touch-dash.on-cooldown {
+  background: radial-gradient(circle, rgba(90, 106, 128, 0.4), rgba(60, 70, 80, 0.6));
+  border-color: rgba(90, 106, 128, 0.4);
+  box-shadow: none;
+  opacity: 0.5;
+}
+
+.touch-mine {
+  right: 130px;
+  bottom: 140px;
+  width: 60px;
+  height: 60px;
+  font-size: 10px;
+  background: radial-gradient(circle, rgba(231, 76, 60, 0.5), rgba(192, 57, 43, 0.7));
+  border: 2px solid rgba(231, 76, 60, 0.5);
+  box-shadow: 0 0 15px rgba(231, 76, 60, 0.2);
+}
+
+.touch-mine.on-cooldown {
+  background: radial-gradient(circle, rgba(90, 64, 64, 0.4), rgba(60, 40, 40, 0.6));
+  border-color: rgba(90, 64, 64, 0.4);
+  box-shadow: none;
+  opacity: 0.5;
+}
+
+/* ==================== MOBILE RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: auto;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Lobby */
+  .lobby-layout {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .lobby-box {
+    width: 90vw;
+    max-width: 420px;
+    padding: 24px 20px;
+  }
+
+  .lobby-box h1 {
+    font-size: 28px;
+    letter-spacing: 3px;
+  }
+
+  .ranking-card {
+    width: 90vw;
+    max-width: 420px;
+  }
+
+  .join-box {
+    padding: 32px 24px;
+  }
+
+  .join-box h1 {
+    font-size: 32px;
+    letter-spacing: 3px;
+  }
+
+  .join-box input,
+  .join-box button {
+    width: 200px;
+  }
+
+  .controls-hint {
+    display: none;
+  }
+
+  .lobby-create {
+    flex-direction: column;
+  }
+
+  .lobby-create input,
+  .lobby-create button {
+    width: 100%;
+  }
+
+  /* HUD */
+  #healthBar {
+    width: 140px;
+    height: 14px;
+    bottom: 12px;
+  }
+
+  #healthText {
+    font-size: 8px;
+  }
+
+  #minimap {
+    bottom: 10px;
+    right: 8px;
+  }
+
+  #minimapCanvas {
+    width: 80px;
+    height: 80px;
+  }
+
+  #scoreboard {
+    top: 36px;
+    left: 10px;
+    font-size: 9px;
+    min-width: 140px;
+  }
+
+  .score-row {
+    padding: 3px 8px;
+  }
+
+  #killFeed {
+    top: 12px;
+    right: 10px;
+    font-size: 9px;
+    max-width: 200px;
+  }
+
+  #playerCount {
+    font-size: 10px;
+    top: 10px;
+    padding: 3px 10px;
+  }
+
+  #fpsCounter {
+    font-size: 9px;
+    top: 4px;
+    right: 4px;
+  }
+
+  #cooldownBars {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 30px;
+    flex-direction: row;
+    gap: 6px;
+    opacity: 0.6;
+  }
+
+  .cooldown-item {
+    transform: scale(0.7);
+  }
+
+  .cooldown-track {
+    width: 36px;
+  }
+
+  .cooldown-icon {
+    font-size: 10px;
+  }
+
+  .cooldown-label {
+    font-size: 7px;
+  }
+
+  #buffsContainer {
+    bottom: 50px;
+    font-size: 9px;
+  }
+
+  #powerupNotification {
+    bottom: 90px;
+    font-size: 16px;
+  }
+
+  .respawn-text {
+    font-size: 24px;
+  }
+
+  .respawn-sub {
+    font-size: 12px;
+  }
+
+  #btnLeaveRoom {
+    top: 4px;
+    left: 4px;
+    padding: 4px 10px;
+    font-size: 10px;
+  }
+}
+
+/* Landscape phone */
+@media (max-height: 500px) and (orientation: landscape) {
+  #healthBar {
+    width: 160px;
+    bottom: 8px;
+  }
+
+  #minimap {
+    bottom: 8px;
+    right: 8px;
+  }
+
+  #minimapCanvas {
+    width: 80px;
+    height: 80px;
+  }
+
+  #cooldownBars {
+    bottom: 32px;
+  }
+
+  #scoreboard {
+    top: 28px;
+    left: 8px;
+  }
+
+  .touch-fire {
+    right: 20px;
+    bottom: 60px;
+    width: 76px;
+    height: 76px;
+  }
+
+  .touch-dash {
+    right: 110px;
+    bottom: 30px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .touch-mine {
+    right: 110px;
+    bottom: 100px;
+    width: 52px;
+    height: 52px;
+  }
+}
+
+/* iOS safe area */
+@supports (padding: env(safe-area-inset-left)) {
+  #joystickZone {
+    padding-left: env(safe-area-inset-left);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .touch-fire,
+  .touch-dash,
+  .touch-mine {
+    margin-right: env(safe-area-inset-right);
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+}

@@ -406,7 +406,7 @@ function serverTick(room) {
       const vy0 = speed * sinA;
 
       const angles = p.buffs.trishot > 0
-        ? [p.angle - 0.15, p.angle, p.angle + 0.15]
+        ? [p.angle - 0.03, p.angle, p.angle + 0.03]
         : [p.angle];
 
       for (const a of angles) {

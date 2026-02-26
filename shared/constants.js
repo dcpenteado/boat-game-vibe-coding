@@ -41,9 +41,9 @@ export const POWERUP_MAX = 6;
 export const POWERUP_RADIUS = 8;
 export const POWERUP_TYPES = ['health', 'speed', 'trishot', 'shield'];
 export const POWERUP_DURATION = {
-  speed: 6.0,
-  trishot: 8.0,
-  shield: 5.0
+  speed: 30.0,
+  trishot: 30.0,
+  shield: 30.0
 };
 
 // ====== MINES ======

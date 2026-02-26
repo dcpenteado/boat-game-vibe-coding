@@ -860,6 +860,6 @@ io.on('connection', (socket) => {
 // ============================================================
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
-  console.log(`\n  BARQUINHO server running on http://localhost:${PORT}\n`);
+  console.log(`\n Sink or Sail server running on http://localhost:${PORT}\n`);
   console.log(`  Tick rate: ${C.TICK_RATE} Hz\n`);
 });

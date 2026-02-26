@@ -1,4 +1,4 @@
-# Barquinho
+# Boar War
 
 A real-time multiplayer naval combat game built with Three.js and Socket.IO.
 
@@ -51,7 +51,7 @@ npm run dev
 ## Project Structure
 
 ```
-barquinho/
+game/
 ├── server.js              # Game server (physics, rooms, networking)
 ├── shared/
 │   └── constants.js       # Shared game constants (physics, combat, map)
